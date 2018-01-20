@@ -1,0 +1,78 @@
+---
+title: "Time Series Models Simulation Notebook"
+output: html_notebook
+---
+There are two simulation provided in this notebook
+(1) Random walk
+(2) Moving average with Lag 2
+
+The ACF function tell us the autocorrelation. Whenever we have a time series to analyze, we remove the overall trend and seasonality trend, and then apply the time series model on it provided we have stationary time series.
+
+Here is correlogram of ACF function for a simple white noise (~(iid) Normal(0,1)) looks like.
+
+```{r}
+noise_ts =  ts(rnorm(100))
+acf(noise_ts,main="correlogram",)
+```
+Now let us simulate a Random walk.
+Def: A random walk model is a time series model where X_t = X_t-1 + Z_t
+where Zt is white noise ~ Normal(mean,std^2).
+
+Let us assume our X0 is 0, then X1 becomes Z1, X2 = X1 + Z2 = Z1 + Z2 and so on
+
+Xt = sum of all Z
+E[Xt] = mean * t
+V[Xt] = std^2 * t
+
+Note the mean and variance are both dependent on t so it is not a stationary time series. Let check this :
+```{r}
+
+#Init
+z = rnorm(2000)
+x=NULL
+x[1] = 0 
+for(i in 2:2000){
+  x[i] =  z[i] + x[i-1] 
+}
+
+#Convert to ts
+random_walk_ts =  ts(x)
+par(mfrow=c(1,2))
+plot(random_walk_ts,main='Random Walk',ylab = 'value')
+acf(random_walk_ts,main='ACF of Random Walk')
+```
+From the ACF plot it is clear that it is surely not a stationary time series. One thing to note is that we can actually convert a random walk into a time series by application of a difference operator because Xt = Xt-1 + Zt if I subract the lagged series (by -1) then Xt = Zt. Thus we obtain a purely stocastic process.
+
+```{r}
+#one way
+random_walk_ts_lagged = lag(random_walk_ts,-1)
+new_random_ts = random_walk_ts - random_walk_ts_lagged
+#Another way
+n_rand_ts = diff(random_walk_ts)
+par(mfrow=c(1,2))
+plot(new_random_ts,main='Random Walk',ylab = 'value')
+acf(new_random_ts,main='ACF of Random Walk')
+
+```
+
+Now, lets shift our focus to Moving average. Moving average is a time series model in which Xt is a linear combination of previous noise value.
+i.e. MA(k) model is a linear combination of k past (from t to t-k) random noise.
+
+Example for MA(2)
+X_t = z_t + a1 X Z_(t-1) + a2 X Z_(t-2)
+where Zt is iid white noise. Lets simulate the MA(2) process
+
+```{r}
+
+z = rnorm(1000)
+ma_2 = NULL
+for(i in 3:1000){
+  ma_2[i] = z[i] + 0.5*z[i-1] + 0.3 * z[i-2]
+}
+
+movingAverage_TS = ts(ma_2[3:1000])
+par(mfrow=c(1,2))
+plot(movingAverage_TS,main='Moving Average',ylab = 'value')
+acf(movingAverage_TS,main='ACF of Moving Average')
+
+```
