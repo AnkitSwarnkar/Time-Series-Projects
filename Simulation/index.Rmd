@@ -1,8 +1,9 @@
 ---
-title: "Time Series Models Simulation Notebook"
+title: "The Time Series Models Simulation Notebook"
 output: html_notebook
 ---
 There are two simulation provided in this notebook
+
 (1) Random walk
 (2) Moving average with Lag 2
 
